@@ -1,92 +1,57 @@
-# Jeraldo Letricio Halomoan Manulang
-# 12220080
-
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import json
 import streamlit as st
+import plotly.express as px
 
-st.title("World's Oil Producting Data")
+#merge data
+data=pd.read_csv("produksi_minyak_mentah.csv")
+datanegara=pd.read_json('kode_negara_lengkap.json')
+datanegara=datanegara.rename(columns={"alpha-3":"kode_negara"})
+data=pd.merge(datanegara,data,on='kode_negara')
+
+#selektor
+selectorn=data['name'].drop_duplicates()
+selectort=data['tahun'].drop_duplicates()
+selectorb=[*range(1, 250, 1)]
+
+#judul
+st.title('Data Produksi Minyak Dunia')
 st.markdown('UAS IF2112 Pemrograman Komputer')
-st.markdown('Jeraldo Letricio Halomoan Manulang')
-st.markdown('082186627430')
-
-listnamescoun = list()
-listcodescoun = list()
-
-fhand = open('kode_negara_lengkap.json')
-data = json.load(fhand)              #Membaca file json
-for country in data:                 #Loop pada tiap negara di file json
-    listtups = [(kategori, hasil) for kategori, hasil in country.items()] #Mengubah dictionaries menjadi list of tuples
-    countriesdatas = listtups[0]     #Data nama negara pada tuple pertama
-    counpref = countriesdatas[1]     #Nama negara pada tuple indeks pertama
-    listnamescoun.append(counpref)
-    codeprefdata = listtups[2]       #Data kode negara pada tuple ketiga
-    codepref = codeprefdata[1]       #Kode negara pada tuple indeks pertama
-    listcodescoun.append(codepref)
-
-dicties = dict(zip(listnamescoun, listcodescoun))   #Memasangkan masing-masing nama dan kode negara pada dictionary
-
-# PROBLEM A
-st.markdown("Country's Oil Production Data and Graphic")
-selectt=st.selectbox('Select Year: ',selectort)
-country_input = input("Input Preffered Country: ")
-
-if country_input in listnamescoun:
-    inputcode = dicties[country_input]              #Kode negara yang tepat diassign sesuai dengan nama negara masukan user
-else:
-    print("Country's Not Found! Enter Valid Country")
-
-readcsv = pd.read_csv('produksi_minyak_mentah.csv')
-readcsv.produksi = readcsv.produksi.astype(int)           #Menghilangkan titik pada data produksi
-index_csv = readcsv.set_index("kode_negara")              #Mengubah index menjadi kode negara
-stproblemdata = index_csv.loc[inputcode]                  #Slicing data hanya sesuai input negara dari user
-
-stproblemdata.plot(x='tahun', y='produksi', kind ='line')
-plt.title("Production to Year Graphic")
-plt.show()
-
-# PROBLEM B
-print("\nCountry's B-Graphic for Preffered Year")
-countsize_input = input("Input How Big is Preffered Country: ")
-year_input = input("Input Preffered Year (1971-2015): ")
-
-index_csv = readcsv.set_index("tahun")                                #Mengubah index menjadi tahun
-sliceyear = index_csv.loc[int(year_input)]                            #Slicing data hanya sesuai input tahun dari user
-sorted_prod = sliceyear.sort_values(["produksi"], ascending = False)  #Mengurutkan data produksi dari terbesar ke terkecil
-ndproblemdata = sorted_prod.head(int(countsize_input))                #Mengambil data B-besar negara inputan user
-
-ndproblemdata.plot(x="kode_negara", y='produksi', kind ='bar')
-plt.title("Country's B-Graphic for Preffered Year")
-plt.show()
-
-# PROBLEM C
-print("\nCountry's B-Graphic for Accumulated Year")
-acc_input = input("Input How Big is Preffered Country : ")
-
-count_code_one = list(sliceyear["kode_negara"])  #Mengambil deretan kode negara dari data di soal sebelumnya
-                                                 #Dikarenakan ketiadaan negara Afghanistan pada file csv yang diberikan
-index_csv = readcsv.set_index("kode_negara")     #Mengubah index menjadi kode negara
-count_code_2 = list()
-prodcode_list = list()
-
-for count_x in count_code_one:
-    evcountcode = index_csv.loc[count_x]        #Data pada negara tertentu
-    prodata = list(evcountcode["produksi"])     #Memasukkan data produksi suatu negara ke dalam list untuk dijumlahkan
-    acc_production = sum(prodata)               #Menjumlahkan data produksi untuk mendapat kumulatif produksi
-    count_code_2.append(count_x)                #Memasukkan ke dalam list
-    prodcode_list.append(acc_production)
-
-sum_rdproblem = {"kode_negara" : count_code_2, "Accumulated Production" : prodcode_list}
-rdproblemdata = pd.DataFrame(sum_rdproblem)                                              #Membuat 2 list tadi ke dalam dataframe
-rdproblemdata = rdproblemdata.sort_values(["Accumulated Production"], ascending = False) #Mengatur agar urutan dari kumulatif terbesar
-dif_rd_problem = rdproblemdata.head(int(acc_input))                                      #Menampilkan hanya data B-besar negara berdasarkan kumulatif
-
-dif_rd_problem.plot(x="kode_negara", y='Accumulated Production', kind ='bar')
-plt.title("Country's B-Graphic for Accumulated Year")
-plt.show()
-
+st.markdown('Gerard Gregory 12220095')
+'''
+________________________________________________________________________
+'''
+#No.1: Produksi Minyak Tiap Negara Per Tahun
+st.markdown('Produksi Minyak Tiap Negara per Tahun')
+selectn=st.selectbox('Pilih Negara: ',selectorn)
+datano1=data[data['name']==selectn]
+datano1graph=px.line(datano1,x="tahun",y="produksi",title=str("Produksi Minyak Negara "+selectn))
+st.plotly_chart(datano1graph)
+'''
+________________________________________________________________________
+'''
+#No.2: Produksi Minyak n-besar pada Tahun x
+st.markdown('Produksi Minyak n-besar Negara per Tahun')
+selectt=st.selectbox('Pilih Tahun: ',selectort)
+selectbn=st.select_slider('Pilih Banyak Negara: ',options=selectorb, value=5)
+datano2=data[data['tahun']==selectt]
+datano2=datano2.sort_values(["produksi"],ascending=[0])
+datano2=datano2[:selectbn]
+datano2graph=px.bar(datano2,x="name",y="produksi",title=str(str(selectbn)+" Negara Terbesar Produksi Minyak pada Tahun "+str(selectt)))
+st.plotly_chart(datano2graph)
+'''
+________________________________________________________________________
+'''
+#No. 3: Produksi Minyak n-besar Kumulatif
+st.markdown('Produksi Minyak n-besar Negara Kumulatif')
+selectbn2=st.select_slider('Pilih Banyak Negara: ',options=selectorb, value=5, key="selectbn2")
+datano3=data.groupby(["name"])["produksi"].sum().reset_index()
+datano3=datano3.sort_values(["produksi"],ascending=[0])
+datano3=datano3[:selectbn2]
+datano3graph=px.bar(datano3,x="name",y="produksi",title=str(str(selectbn2)+" Negara Terbesar Produksi Minyak Kumulatif"))
+st.plotly_chart(datano3graph)
+'''
+________________________________________________________________________
+'''
 #No. 4: Informasi per Tahun
 st.markdown('Informasi Berdasarkan Tahun')
 selectt2=st.selectbox('Pilih Tahun: ',selectort,key="selectt2")
