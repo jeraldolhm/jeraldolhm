@@ -16,7 +16,8 @@ selectorb=[*range(1, 250, 1)]
 #judul
 st.title('Data Produksi Minyak Dunia')
 st.markdown('UAS IF2112 Pemrograman Komputer')
-st.markdown('Gerard Gregory 12220095')
+st.markdown('Jeraldo Letricio Halomoan Manulang')
+st.markdown('12220080')
 '''
 ________________________________________________________________________
 '''
